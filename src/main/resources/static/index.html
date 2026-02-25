@@ -2,40 +2,127 @@
 <html>
 <head>
     <title>Weather App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            width: 350px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #2c3e50;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #1a252f;
+        }
+
+        .weather-card {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .loading {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Live Weather Forecast</h2>
+<div class="container">
+    <h2>Live Weather Forecast</h2>
 
-<input type="text" id="city" placeholder="Enter city name">
-<button onclick="getWeather()">Get Weather</button>
+    <input type="text" id="city" placeholder="Enter city name">
+    <br>
+    <button onclick="getWeather()">Get Weather</button>
 
-<div id="result"></div>
+    <div id="loading" class="loading"></div>
+    <div id="result"></div>
+</div>
 
 <script>
     function getWeather() {
         const city = document.getElementById("city").value;
+        const resultDiv = document.getElementById("result");
+        const loadingDiv = document.getElementById("loading");
 
         if (!city) {
             alert("Please enter a city name");
             return;
         }
 
+        resultDiv.innerHTML = "";
+        loadingDiv.innerHTML = "Loading...";
+
         fetch(`/weather/${city}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("City not found");
+                }
+                return response.json();
+            })
             .then(data => {
-                document.getElementById("result").innerHTML = `
-                    <p><strong>City:</strong> ${data.city}</p>
-                    <p><strong>Country:</strong> ${data.country}</p>
-                    <p><strong>Temperature:</strong> ${data.temperature.toFixed(2)} °C</p>
-                    <p><strong>Humidity:</strong> ${data.humidity}%</p>
-                    <p><strong>Description:</strong> ${data.description}</p>
-                    <p><strong>Wind Speed:</strong> ${data.windSpeed} m/s</p>
+                loadingDiv.innerHTML = "";
+
+                resultDiv.innerHTML = `
+                    <div class="weather-card">
+                        <p><strong>City:</strong> ${data.city}</p>
+                        <p><strong>Country:</strong> ${data.country}</p>
+                        <p><strong>Temperature:</strong> ${data.temperature.toFixed(2)} °C</p>
+                        <p><strong>Humidity:</strong> ${data.humidity}%</p>
+                        <p><strong>Description:</strong> ${data.description}</p>
+                        <p><strong>Wind Speed:</strong> ${data.windSpeed} m/s</p>
+                    </div>
                 `;
             })
             .catch(error => {
-                document.getElementById("result").innerHTML =
-                    "<p style='color:red;'>City not found or server error</p>";
+                loadingDiv.innerHTML = "";
+                resultDiv.innerHTML = "<p class='error'>City not found or server error</p>";
             });
     }
 </script>
